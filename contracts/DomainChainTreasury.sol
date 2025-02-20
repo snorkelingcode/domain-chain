@@ -22,19 +22,18 @@ contract DomainChainTreasury is Ownable, ReentrancyGuard {
     event FundsWithdrawn(address indexed recipient, uint256 amount);
 
     // Collect verification fee with dynamic pricing potential
-    function collectVerificationFee() external payable nonReentrant {
-        require(msg.value >= BASE_VERIFICATION_FEE, "Insufficient fee");
-        
-        // Calculate platform fee
-        uint256 platformFeeAmount = (msg.value * platformFeePercentage) / 10000;
-        uint256 remainingAmount = msg.value - platformFeeAmount;
+function collectVerificationFee() external payable nonReentrant {
+    require(msg.value >= BASE_VERIFICATION_FEE, "Insufficient fee");
+    
+    // Calculate platform fee
+    uint256 platformFeeAmount = (msg.value * platformFeePercentage) / 10000;
 
-        // Distribute fees
-        platformFees[owner()] += platformFeeAmount;
-        
-        emit VerificationFeePaid(msg.sender, msg.value);
-        emit PlatformFeeCollected(owner(), platformFeeAmount);
-    }
+    // Distribute fees
+    platformFees[owner()] += platformFeeAmount;
+    
+    emit VerificationFeePaid(msg.sender, msg.value);
+    emit PlatformFeeCollected(owner(), platformFeeAmount);
+}
 
     // Flexible provider fund allocation
     function allocateProviderFunds(address provider, uint256 amount) external onlyOwner {

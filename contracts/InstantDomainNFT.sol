@@ -104,27 +104,25 @@ contract ImprovedInstantDomainNFT is ERC721Enumerable, Ownable {
     }
 
     // Intelligent Price Suggestion Algorithm
-    function suggestPrice(string memory domainName) public view returns (uint256) {
-        PricingData memory pricing = domainPricing[domainName];
-        
-        // Base pricing logic
-        uint256 basePrice = 0.01 ether;
-        
-        // If domain has previous transaction history
-        if (pricing.totalTransactions > 0) {
-            // Use last sale price with some dynamic adjustment
-            basePrice = pricing.lastSalePrice.mul(110).div(100); // 10% increase
-        }
-        
-        // Additional factors (simplified)
-        uint256 lengthFactor = bytes(domainName).length <= 10 ? 2 : 1;
-        
-        uint256 recommendedPrice = basePrice.mul(lengthFactor);
-        
-        emit PriceRecommended(domainName, recommendedPrice);
-        
-        return recommendedPrice;
+function suggestPrice(string memory domainName) public view returns (uint256) {
+    PricingData memory pricing = domainPricing[domainName];
+    
+    // Base pricing logic
+    uint256 basePrice = 0.01 ether;
+    
+    // If domain has previous transaction history
+    if (pricing.totalTransactions > 0) {
+        // Use last sale price with some dynamic adjustment
+        basePrice = pricing.lastSalePrice * 110 / 100; // 10% increase
     }
+    
+    // Additional factors (simplified)
+    uint256 lengthFactor = bytes(domainName).length <= 10 ? 2 : 1;
+    
+    uint256 recommendedPrice = basePrice * lengthFactor;
+    
+    return recommendedPrice;
+}
 
     // Update domain price with more flexible mechanism
     function updateDomainPrice(
