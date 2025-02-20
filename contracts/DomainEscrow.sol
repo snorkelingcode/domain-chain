@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-import "./OptimizedDomainChainToken.sol";
+import "./DomainChainToken.sol";
 import "./DomainChainTreasury.sol";
+import "./DomainEscrow.sol";
 
 contract UltraFastDomainEscrow is ReentrancyGuard, Ownable {
     using Counters for Counters.Counter;
