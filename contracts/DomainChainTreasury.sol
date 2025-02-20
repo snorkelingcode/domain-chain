@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract DomainChainTreasury is Ownable, ReentrancyGuard {
     // Fixed and dynamic fee structures
-    uint256 public constant BASE_VERIFICATION_FEE = 0.01 ether;
+    uint256 public constant BASE_VERIFICATION_FEE = 0.001 ether;
     uint256 public platformFeePercentage = 250; // 2.5%
 
     // Tracking funds and providers

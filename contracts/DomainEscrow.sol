@@ -9,13 +9,14 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import "./DomainChainToken.sol";
 import "./DomainChainTreasury.sol";
+import "./DomainNFT.sol";
 
-contract UltraFastDomainEscrow is ReentrancyGuard, Ownable {
+contract DomainEscrow is ReentrancyGuard, Ownable {
     using Counters for Counters.Counter;
     using ECDSA for bytes32;
 
     // External Contracts
-    OptimizedDomainChainToken public rewardsToken;
+    DomainChainToken public rewardsToken;
     DomainChainTreasury public treasury;
     IERC721 public domainNFT;
 
@@ -53,7 +54,7 @@ contract UltraFastDomainEscrow is ReentrancyGuard, Ownable {
         address _treasuryAddress,
         address _domainNFTAddress
     ) {
-        rewardsToken = OptimizedDomainChainToken(_rewardsTokenAddress);
+        rewardsToken = DomainChainToken(_rewardsTokenAddress);
         treasury = DomainChainTreasury(payable(_treasuryAddress));
         domainNFT = IERC721(_domainNFTAddress);
     }

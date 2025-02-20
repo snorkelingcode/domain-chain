@@ -1,28 +1,28 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
+import { DomainNFT } from "../typechain-types";
 
-describe("InstantDomainNFT", function () {
-  let instantDomainNFT: any;
+describe("DomainNFT", function () {
+  let domainNFT: DomainNFT;
   let owner: any;
   let addr1: any;
 
   beforeEach(async function () {
-    const InstantDomainNFT = await ethers.getContractFactory("InstantDomainNFT");
+    const DomainNFTFactory = await ethers.getContractFactory("DomainNFT");
     [owner, addr1] = await ethers.getSigners();
     
-    instantDomainNFT = await InstantDomainNFT.deploy();
-    await instantDomainNFT.waitForDeployment();
+    domainNFT = await DomainNFTFactory.deploy();
+    await domainNFT.waitForDeployment();
   });
 
   it("Should mint a new domain", async function () {
     const domainName = "example.com";
     const price = ethers.parseEther("0.1");
-    const verificationHash = ethers.keccak256(ethers.toUtf8Bytes(domainName));
-
-    await instantDomainNFT.mintDomain(domainName, price, verificationHash);
     
-    const tokenId = await instantDomainNFT.domainToTokenId(domainName);
-    const metadata = await instantDomainNFT.getDomainMetadata(tokenId);
+    await domainNFT.mintDomain(domainName, price);
+    
+    const tokenId = await domainNFT.domainToTokenId(domainName);
+    const metadata = await domainNFT.getDomainMetadata(tokenId);
 
     expect(metadata.domainName).to.equal(domainName);
     expect(metadata.originalOwner).to.equal(owner.address);
@@ -31,12 +31,11 @@ describe("InstantDomainNFT", function () {
   it("Should prevent duplicate domain registration", async function () {
     const domainName = "example.com";
     const price = ethers.parseEther("0.1");
-    const verificationHash = ethers.keccak256(ethers.toUtf8Bytes(domainName));
 
-    await instantDomainNFT.mintDomain(domainName, price, verificationHash);
+    await domainNFT.mintDomain(domainName, price);
     
     await expect(
-      instantDomainNFT.mintDomain(domainName, price, verificationHash)
+      domainNFT.mintDomain(domainName, price)
     ).to.be.revertedWith("Domain already registered");
   });
 });

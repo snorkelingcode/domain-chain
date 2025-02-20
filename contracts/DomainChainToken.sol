@@ -2,11 +2,14 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-contract OptimizedDomainChainToken is ERC20, Ownable {
+contract DomainChainToken is ERC20, AccessControl {
     using SafeMath for uint256;
+
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     // Reward configurations with more flexible parameters
     uint256 public constant BASE_REWARD_PERCENTAGE = 5; // 0.05%
@@ -16,6 +19,9 @@ contract OptimizedDomainChainToken is ERC20, Ownable {
     uint256 public rewardMultiplier = 1;
 
     constructor() ERC20("DomainChain", "DCH") {
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(MINTER_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, msg.sender);
         // Initial mint to contract owner
         _mint(msg.sender, 1_000_000 * 10**18);
     }
@@ -34,7 +40,7 @@ contract OptimizedDomainChainToken is ERC20, Ownable {
     function batchMintRewards(
         address[] memory recipients, 
         uint256[] memory amounts
-    ) external {
+    ) external onlyRole(MINTER_ROLE) {
         require(
             recipients.length == amounts.length, 
             "Mismatched array lengths"
@@ -60,7 +66,7 @@ contract OptimizedDomainChainToken is ERC20, Ownable {
     function mintRewards(
         address recipient, 
         uint256 transactionAmount
-    ) external {
+    ) external onlyRole(MINTER_ROLE) {
         uint256 rewardAmount = calculateReward(transactionAmount);
         
         // Check total supply before minting
@@ -75,7 +81,7 @@ contract OptimizedDomainChainToken is ERC20, Ownable {
     // Adjust reward multiplier for dynamic incentives
     function updateRewardMultiplier(
         uint256 newMultiplier
-    ) external onlyOwner {
+    ) external onlyRole(ADMIN_ROLE) {
         require(newMultiplier > 0, "Invalid multiplier");
         rewardMultiplier = newMultiplier;
     }
