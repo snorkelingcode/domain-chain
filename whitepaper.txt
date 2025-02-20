@@ -1,0 +1,216 @@
+# Domain Escrow System: Technical Whitepaper
+
+## Abstract
+The Domain Escrow System is a decentralized application designed to facilitate secure domain name transfers between parties. It combines blockchain-based smart contracts with DNS verification to ensure safe and verifiable domain transfers while protecting both buyers and sellers from fraud.
+
+## 1. System Architecture
+
+### 1.1 Core Components
+1. **Smart Contract (DomainEscrow.sol)**
+   - Manages escrow states and funds
+   - Handles verification logic
+   - Implements security measures
+   - Manages platform fees
+
+2. **Verification Service (DomainVerificationService.ts)**
+   - Interfaces with the smart contract
+   - Handles DNS verification
+   - Manages domain transfer states
+   - Provides helper functions for contract interaction
+
+3. **External Components**
+   - DNS System for verification
+   - Ethereum Network for contract deployment
+   - Web3 Provider for blockchain interaction
+
+### 1.2 System Flow Diagram
+```
+[Seller] → Creates Escrow → [Smart Contract]
+                                ↓
+[Buyer] → Funds Escrow → [Smart Contract]
+                                ↓
+[Buyer] → Initiates Transfer → [Verification Process]
+                                ↓
+[DNS Verification] ← → [Domain Verification Service]
+                                ↓
+[Smart Contract] → Completes Transfer → [Funds Released]
+```
+
+## 2. Smart Contract Details
+
+### 2.1 State Management
+The contract uses an enum `EscrowStatus` to track six possible states:
+- Active: Initial state when created
+- Funded: Buyer has deposited funds
+- TransferInitiated: Domain transfer process started
+- TransferVerified: DNS verification completed
+- Completed: Transfer successful and funds distributed
+- Cancelled: Transfer failed or timed out
+- Disputed: Issues requiring intervention
+
+### 2.2 Key Data Structures
+```solidity
+struct Escrow {
+    uint256 id;
+    string domainName;
+    address payable seller;
+    address payable buyer;
+    uint256 price;
+    uint256 createdAt;
+    uint256 expiresAt;
+    uint256 transferInitiatedAt;
+    EscrowStatus status;
+    bool isDNSVerified;
+    string registrarAuthCode;
+    bytes32 verificationHash;
+}
+```
+
+### 2.3 Security Measures
+1. **ReentrancyGuard**
+   - Prevents reentrant calls in fund transfers
+   - Protects against common attack vectors
+
+2. **Ownership Controls**
+   - Platform fee management
+   - Administrative functions
+
+3. **Timeouts**
+   - 7-day transfer window
+   - Automatic refund mechanism
+
+## 3. Domain Verification Process
+
+### 3.1 Verification Flow
+1. Buyer initiates transfer
+2. System generates verification hash
+3. Seller updates DNS TXT record
+4. System verifies DNS record
+5. Contract confirms transfer
+6. Funds are released
+
+### 3.2 DNS Verification
+```typescript
+async verifyDNSRecord(domainName: string, verificationHash: string): Promise<boolean>
+```
+- Checks TXT records for verification hash
+- Validates domain ownership
+- Ensures transfer authenticity
+
+## 4. Financial Flow
+
+### 4.1 Fund Management
+1. **Escrow Creation**
+   - Seller specifies price
+   - Contract locks domain status
+
+2. **Funding Process**
+   - Buyer deposits exact amount
+   - Funds held in contract
+
+3. **Distribution**
+   - Platform fee calculation (2.5%)
+   - Seller payment
+   - Automatic refund on timeout
+
+### 4.2 Fee Structure
+- Platform fee: 2.5% (250 basis points)
+- Maximum fee cap: 10%
+- Adjustable by contract owner
+
+## 5. Technical Implementation
+
+### 5.1 Contract Functions
+1. **createEscrow**
+   - Creates new escrow instance
+   - Validates domain availability
+   - Sets initial parameters
+
+2. **fundEscrow**
+   - Accepts buyer payment
+   - Updates escrow status
+   - Validates amount
+
+3. **initiateDomainTransfer**
+   - Generates verification hash
+   - Starts transfer window
+   - Updates status
+
+4. **verifyDomainTransfer**
+   - Validates DNS proof
+   - Updates verification status
+   - Enables completion
+
+5. **confirmTransfer**
+   - Finalizes transfer
+   - Distributes funds
+   - Updates domain status
+
+### 5.2 Verification Service Methods
+1. **Constructor**
+   ```typescript
+   constructor(
+     contractAddress: string,
+     provider: ethers.Provider,
+     verificationEndpoint: string
+   )
+   ```
+
+2. **Domain Operations**
+   - initiateDomainTransfer
+   - verifyDomainTransfer
+   - handleTransferTimeout
+   - verifyDNSRecord
+
+3. **Helper Functions**
+   - getEscrowDetails
+   - isTransferExpired
+   - getEscrowEvents
+
+## 6. Deployment and Integration
+
+### 6.1 Contract Deployment
+```typescript
+const domainEscrow = await ethers.deployContract("DomainEscrow");
+await domainEscrow.waitForDeployment();
+```
+
+### 6.2 Network Configuration
+```typescript
+networks: {
+    sepolia: {
+        url: process.env.INFURA_API_KEY,
+        accounts: [process.env.PRIVATE_KEY]
+    }
+}
+```
+
+## 7. Error Handling and Recovery
+
+### 7.1 Transaction Failures
+- Automatic refund mechanism
+- Timeout handling
+- Status rollback capabilities
+
+### 7.2 DNS Verification Failures
+- Retry mechanism
+- Error logging
+- Timeout enforcement
+
+## 8. Future Improvements
+
+### 8.1 Potential Enhancements
+1. Multi-signature verification
+2. Additional domain registrar support
+3. Dispute resolution mechanism
+4. Enhanced fee structures
+5. Cross-chain compatibility
+
+### 8.2 Scalability Considerations
+1. Gas optimization
+2. Batch processing
+3. State channel integration
+4. Layer 2 solutions
+
+## 9. Conclusion
+The Domain Escrow System provides a secure, automated solution for domain transfers, combining blockchain security with traditional DNS infrastructure. Its modular design and comprehensive verification process ensure reliable and trustless transactions between parties.
